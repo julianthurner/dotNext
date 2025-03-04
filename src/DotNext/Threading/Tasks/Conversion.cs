@@ -22,7 +22,7 @@ public static class Conversion
         where TInput : TOutput => task.Convert(Converter.Identity<TInput, TOutput>());
 
     /// <summary>
-    /// Converts one type of task into another.
+    /// Converts one type of <see cref="AwaitableResult{T}"/> into another.
     /// </summary>
     /// <typeparam name="TInput">The source Result type.</typeparam>
     /// <typeparam name="TOutput">The target Result type.</typeparam>
@@ -43,7 +43,7 @@ public static class Conversion
         => converter(await task.ConfigureAwait(false));
 
     /// <summary>
-    /// Converts one type of task into another.
+    /// Converts one type of <see cref="AwaitableResult{T}"/> into another.
     /// </summary>
     /// <typeparam name="TInput">The source Result type.</typeparam>
     /// <typeparam name="TOutput">The target Result type.</typeparam>
@@ -84,7 +84,7 @@ public static class Conversion
         => await converter(await task.ConfigureAwait(false)).ConfigureAwait(false);
 
     /// <summary>
-    /// Converts one type of awaitable Result into another.
+    /// Converts one type of <see cref="AwaitableResult{T}"/> into another.
     /// </summary>
     /// <typeparam name="TInput">The source Result type.</typeparam>
     /// <typeparam name="TOutput">The target Result type.</typeparam>
