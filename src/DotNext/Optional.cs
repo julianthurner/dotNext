@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 namespace DotNext;
 
 using System.Threading.Tasks;
+using DotNext.Threading.Tasks;
 using Runtime.CompilerServices;
 using Intrinsics = Runtime.Intrinsics;
 
@@ -61,18 +62,6 @@ public static class Optional
 
     /// <summary>
     /// If a value is present, apply the provided mapping function to it, and if the result is
-    /// non-null, return an Optional describing the result. Otherwise returns <see cref="Optional{T}.None"/>.
-    /// </summary>
-    /// <typeparam name="TInput">The type of stored in the Optional container.</typeparam>
-    /// <typeparam name="TOutput">The type of the result of the mapping function.</typeparam>
-    /// <param name="task">The task containing Optional value.</param>
-    /// <param name="converter">A mapping function to be applied to the value, if present.</param>
-    /// <returns>An Optional describing the result of applying a mapping function to the value of this Optional, if a value is present, otherwise <see cref="Optional{T}.None"/>.</returns>
-    public static async Task<Optional<TOutput>> Convert<TInput, TOutput>(this Task<Optional<TInput>> task, Converter<TInput, Optional<TOutput>> converter)
-        => (await task.ConfigureAwait(false)).Convert(converter);
-
-    /// <summary>
-    /// If a value is present, apply the provided mapping function to it, and if the result is
     /// non-null, return an Optional describing the result. Otherwise, returns <see cref="Optional{T}.None"/>.
     /// </summary>
     /// <typeparam name="TInput">The type of stored in the Optional container.</typeparam>
@@ -116,18 +105,10 @@ public static class Optional
     /// <summary>
     /// Creates <see cref="Result{T}"/> from <see cref="Optional{T}"/> instance.
     /// </summary>
-    /// <param name="optional">The optional value.</param>
-    /// <returns>The converted optional value.</returns>
-    public static Result<T> ToResult<T>(this in Optional<T> optional)
-        => Result<T>.FromOptional(optional);
-
-    /// <summary>
-    /// Creates <see cref="Result{T}"/> from <see cref="Optional{T}"/> instance.
-    /// </summary>
     /// <param name="task">The task containing Optional value.</param>
     /// <returns>The converted optional value.</returns>
-    public static async Task<Result<T>> ToResult<T>(this Task<Optional<T>> task)
-        => Result<T>.FromOptional(await task.ConfigureAwait(false));
+    public static AwaitableResult<T> ToResult<T>(this Task<Optional<T>> task)
+        => task.Flatten().SuspendException();
 
     /// <summary>
     /// Creates <see cref="Result{T, TError}"/> from <see cref="Optional{T}"/> instance.
@@ -143,14 +124,11 @@ public static class Optional
     /// Creates <see cref="Result{T, TError}"/> from <see cref="Optional{T}"/> instance.
     /// </summary>
     /// <param name="task">The task containing Optional value.</param>
-    /// <param name="error">The error code to apply if the value is not present.</param>
+    /// <param name="converter">The exception converter.</param>
     /// <returns>The converted optional value.</returns>
-    public static async Task<Result<T, TError>> ToResult<T, TError>(this Task<Optional<T>> task, TError error)
+    public static AwaitableResult<T, TError> ToResult<T, TError>(this Task<Optional<T>> task, Converter<Exception, TError> converter)
         where TError : struct, Enum
-    {
-        var optional = await task.ConfigureAwait(false);
-        return optional.HasValue ? new(optional.Value) : new(error);
-    }
+        => task.Flatten().SuspendException(converter);
 
     /// <summary>
     /// If a value is present, returns the value, otherwise throw exception.
