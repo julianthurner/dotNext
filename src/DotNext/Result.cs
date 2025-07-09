@@ -7,8 +7,6 @@ using System.Text.Json.Serialization;
 
 namespace DotNext;
 
-using System;
-using DotNext.Threading.Tasks;
 using Runtime.CompilerServices;
 using Intrinsics = Runtime.Intrinsics;
 
@@ -228,29 +226,6 @@ public readonly struct Result<T> : IResultMonad<T, Exception, Result<T>>
         return result;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private AwaitableResult<TResult> ConvertTask<TResult>(Func<T, CancellationToken, Task<TResult>> converter, CancellationToken token = default)
-    {
-        AwaitableResult<TResult> result;
-        if (exception is null)
-        {
-            try
-            {
-                result = converter.Invoke(value, token).SuspendException();
-            }
-            catch (Exception e)
-            {
-                result = new(Task.FromException<TResult>(e));
-            }
-        }
-        else
-        {
-            result = new(Task.FromException<TResult>(exception.SourceException));
-        }
-
-        return result;
-    }
-
     /// <summary>
     /// If the successful result is present, apply the provided mapping function hiding any exception
     /// caused by the converter.
@@ -270,17 +245,6 @@ public readonly struct Result<T> : IResultMonad<T, Exception, Result<T>>
     /// <returns>The conversion result.</returns>
     public Result<TResult> Convert<TResult>(Converter<T, Result<TResult>> converter)
         => ConvertResult<TResult, DelegatingConverter<T, Result<TResult>>>(converter);
-
-    /// <summary>
-    /// If successful result is present, apply the provided mapping function. If not,
-    /// forward the exception.
-    /// </summary>
-    /// <param name="converter">A mapping function to be applied to the value, if present.</param>
-    /// <typeparam name="TResult">The type of the result of the mapping function.</typeparam>
-    /// <param name="token">The token that can be used to cancel the operation.</param>
-    /// <returns>The conversion result.</returns>
-    public AwaitableResult<TResult> Convert<TResult>(Func<T, CancellationToken, Task<TResult>> converter, CancellationToken token = default)
-        => ConvertTask(converter, token);
 
     /// <summary>
     /// If the successful result is present, apply the provided mapping function hiding any exception
