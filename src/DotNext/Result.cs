@@ -369,13 +369,6 @@ public readonly struct Result<T> : IResultMonad<T, Exception, Result<T>>
         };
 
     /// <summary>
-    /// Converts this result to <see cref="AwaitableResult{TResult}"/>.
-    /// </summary>
-    /// <returns>The awaitable Result representing the result.</returns>
-    public AwaitableResult<T> ToAwaitable()
-        => IsSuccessful ? new(Task.FromResult(value)) : new(Task.FromException<T>(Error));
-
-    /// <summary>
     /// Converts the result to <see cref="Task{TResult}"/>.
     /// </summary>
     /// <param name="result">The result to be converted.</param>

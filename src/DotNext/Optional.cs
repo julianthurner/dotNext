@@ -80,16 +80,6 @@ public static class Optional
     }
 
     /// <summary>
-    /// Creates <see cref="Result{T, TError}"/> from <see cref="Optional{T}"/> instance.
-    /// </summary>
-    /// <param name="optional">The optional value.</param>
-    /// <param name="error">The error code to apply if the value is not present.</param>
-    /// <returns>The converted optional value.</returns>
-    public static Result<T, TError> ToResult<T, TError>(this in Optional<T> optional, TError error)
-        where TError : struct, Enum
-        => optional.HasValue ? new(optional.Value) : new(error);
-
-    /// <summary>
     /// If a value is present, returns the value, otherwise throw exception.
     /// </summary>
     /// <param name="task">The task returning optional value.</param>
